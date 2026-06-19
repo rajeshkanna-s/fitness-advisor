@@ -65,7 +65,7 @@ export interface WebResource {
 
 export interface AppSettings {
   apiKey: string;
-  apiProvider: 'freemodel' | 'gemini' | 'openai' | 'custom';
+  apiProvider: 'freemodel' | 'gemini' | 'openai' | 'anthropic' | 'custom';
   apiBaseUrl: string;
   modelName: string;
   customModelName: string;
