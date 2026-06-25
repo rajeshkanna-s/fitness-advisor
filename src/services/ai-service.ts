@@ -79,7 +79,9 @@ export async function sendMessage(
   const engineContext = getEngineContext(detectedCategory);
 
   try {
-    if (settings.apiProvider === 'gemini') {
+    if (settings.apiProvider === 'freemodel') {
+      return await callFreeModel(messages, settings, engineContext, signal);
+    } else if (settings.apiProvider === 'gemini') {
       return await callGemini(messages, settings, engineContext);
     } else if (settings.apiProvider === 'anthropic') {
       return await callAnthropic(messages, settings, engineContext, onStream, signal);
@@ -111,7 +113,7 @@ async function callOpenAICompatible(
   if (settings.apiProvider === 'custom') {
     model = settings.customModelName || settings.modelName || 'gpt-4o-mini';
   } else {
-    model = settings.modelName || 'FRE-5.5';
+    model = settings.modelName || 'gpt-5.5';
   }
 
   let url: string;
@@ -196,6 +198,67 @@ async function callOpenAICompatible(
 
   const data = await response.json();
   return data?.choices?.[0]?.message?.content || 'No response generated.';
+}
+
+const FREEMODEL_MODELS: Record<string, { provider: string; modelId: string; tokenSlotId: string }> = {
+  'nvidia': {
+    provider: 'nvidia',
+    modelId: 'a34c3d62-5e7d-4504-a009-b689575bdb37',
+    tokenSlotId: 'b8ee59ec-62ed-42fb-b77a-09654020b8b3',
+  },
+  'openrouter': {
+    provider: 'openrouter',
+    modelId: 'eecca7be-5693-4be4-860c-48055729aeb0',
+    tokenSlotId: '877fbe3c-eb52-4b9a-a386-ef97a78eb77c',
+  },
+};
+
+async function callFreeModel(
+  messages: Message[],
+  settings: AppSettings,
+  engineContext: string,
+  signal?: AbortSignal,
+): Promise<string> {
+  const modelKey = settings.modelName || 'nvidia';
+  const modelConfig = FREEMODEL_MODELS[modelKey] || FREEMODEL_MODELS['nvidia'];
+  const url = '/api/freemodel/functions/v1/ai-chat';
+
+  const systemContent = `${SYSTEM_PROMPT}\n\n--- DOMAIN KNOWLEDGE ---\n${engineContext}`;
+  let prompt = `System: ${systemContent}\n\n`;
+  for (const msg of messages) {
+    const role = msg.role === 'assistant' ? 'Assistant' : 'User';
+    prompt += `${role}: ${msg.content}\n\n`;
+  }
+  prompt += 'Assistant:';
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': settings.apiKey,
+      'Authorization': `Bearer ${settings.apiKey}`,
+    },
+    body: JSON.stringify({
+      provider: modelConfig.provider,
+      modelId: modelConfig.modelId,
+      tokenSlotId: modelConfig.tokenSlotId,
+      prompt,
+      temperature: 0.7,
+      top_p: 0.9,
+      max_tokens: 4096,
+      attempt_timeout_ms: 30000,
+      stream: false,
+    }),
+    signal,
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error?.message || err?.message || `API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data?.response || data?.content || data?.choices?.[0]?.message?.content || data?.text || JSON.stringify(data);
 }
 
 async function callGemini(

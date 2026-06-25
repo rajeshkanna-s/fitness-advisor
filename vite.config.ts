@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/freemodel': {
-        target: 'https://api.freemodel.dev',
+        target: 'https://wuvgoqjxvnbihwiijzfb.supabase.co',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/freemodel/, ''),
       },

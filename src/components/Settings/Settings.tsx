@@ -65,8 +65,8 @@ export default function Settings({ settings, onSave, onClose }: SettingsProps) {
                   className={`provider-btn ${form.apiProvider === 'freemodel' ? 'active' : ''}`}
                   onClick={() => {
                     update('apiProvider', 'freemodel');
-                    update('modelName', 'FRE-5.5');
-                    update('apiBaseUrl', '/api/freemodel/v1');
+                    update('modelName', 'nvidia');
+                    update('apiBaseUrl', '/api/freemodel');
                   }}
                 >
                   FreeModel
@@ -168,9 +168,8 @@ export default function Settings({ settings, onSave, onClose }: SettingsProps) {
                 >
                   {form.apiProvider === 'freemodel' ? (
                     <>
-                      <option value="FRE-5.5">FRE-5.5 (Default)</option>
-                      <option value="FRE-5.4">FRE-5.4</option>
-                      <option value="FRE-5.0">FRE-5.0</option>
+                      <option value="nvidia">Nvidia (Default)</option>
+                      <option value="openrouter">OpenRouter</option>
                     </>
                   ) : form.apiProvider === 'anthropic' ? (
                     <>

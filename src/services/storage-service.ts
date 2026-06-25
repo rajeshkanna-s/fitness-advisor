@@ -4,10 +4,10 @@ const CHATS_KEY = 'fit_chats';
 const SETTINGS_KEY = 'fit_settings';
 
 const defaultSettings: AppSettings = {
-  apiKey: 'fe_oa_0a8b5431a4269674b7b9a5ea796bd0b6ca31e56a47ba4466',
+  apiKey: 'sb_publishable_XwfSIwlW4c35Ejv4nwG6Dg_LkXaK4Z_',
   apiProvider: 'freemodel',
-  apiBaseUrl: '/api/freemodel/v1',
-  modelName: 'FRE-5.5',
+  apiBaseUrl: '/api/freemodel',
+  modelName: 'nvidia',
   customModelName: '',
   theme: 'dark',
   storagePath: '',
