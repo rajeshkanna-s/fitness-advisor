@@ -1,0 +1,5 @@
+/api/freemodel/*  https://wuvgoqjxvnbihwiijzfb.supabase.co/:splat  200
+/api/openai/*  https://api.openai.com/:splat  200
+/api/gemini/*  https://generativelanguage.googleapis.com/:splat  200
+/api/anthropic/*  https://api.anthropic.com/:splat  200
+/*  /index.html  200
