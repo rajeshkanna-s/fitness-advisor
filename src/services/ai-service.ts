@@ -64,6 +64,19 @@ These suggestions must always be fitness/health-related.`;
 
 export type StreamCallback = (chunk: string) => void;
 
+async function simulateStreaming(text: string, onStream: StreamCallback, signal?: AbortSignal): Promise<void> {
+  const words = text.split(/(\s+)/);
+  let output = '';
+  for (let i = 0; i < words.length; i++) {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    output += words[i];
+    onStream(output);
+    if (words[i].trim()) {
+      await new Promise(r => setTimeout(r, 18));
+    }
+  }
+}
+
 export async function sendMessage(
   messages: Message[],
   settings: AppSettings,
@@ -80,9 +93,13 @@ export async function sendMessage(
 
   try {
     if (settings.apiProvider === 'freemodel') {
-      return await callFreeModel(messages, settings, engineContext, signal);
+      const response = await callFreeModel(messages, settings, engineContext, signal);
+      if (onStream) await simulateStreaming(response, onStream, signal);
+      return response;
     } else if (settings.apiProvider === 'gemini') {
-      return await callGemini(messages, settings, engineContext);
+      const response = await callGemini(messages, settings, engineContext);
+      if (onStream) await simulateStreaming(response, onStream, signal);
+      return response;
     } else if (settings.apiProvider === 'anthropic') {
       return await callAnthropic(messages, settings, engineContext, onStream, signal);
     } else {
